@@ -1,0 +1,26 @@
+server:
+  port: 7771
+
+spring:
+  application:
+    name: IcatxIdentityGeneration
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+  data:
+    mongodb:
+      host: localhost
+      port: 27017
+      database: webprotege
+      auto-index-creation: true
+
+webprotege.rabbitmq:
+  requestqueue: webprotege-identity-generation-queue
+  responsequeue: webprotege-identity-generation-response-queue
+  timeout: 60000
+  event-subscribe: true
+  events-queue: webprotege-identity-generation-events-queue
+
+keycloak-issuer-url: http://webprotege-local.edu/auth/realms/webprotege/protocol/openid-connect/certs
