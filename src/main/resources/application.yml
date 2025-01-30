@@ -1,5 +1,10 @@
 server:
   port: 7771
+  servlet.context-path: /icat/
+
+
+
+icatx.versioning.savebatchsize: 10000
 
 spring:
   application:
@@ -24,3 +29,13 @@ webprotege.rabbitmq:
   events-queue: webprotege-identity-generation-events-queue
 
 keycloak-issuer-url: http://webprotege-local.edu/auth/realms/webprotege/protocol/openid-connect/certs
+spring.security.oauth2:
+  client:
+    registration.keycloak:
+      client-id: webprotege
+      authorization-grant-type: authorization_code
+      scope: openid
+    provider.keycloak:
+      issuer-uri: http://webprotege-local.edu/auth/realms/webprotege
+      user-name-attribute: preferred_username
+  resourceserver.jwt.issuer-uri: http://webprotege-local.edu/auth/realms/webprotege
