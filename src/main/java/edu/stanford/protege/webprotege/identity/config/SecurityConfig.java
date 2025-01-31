@@ -7,11 +7,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
 
-/**
- * Matthew Horridge
- * Stanford Center for Biomedical Informatics Research
- * 2021-07-19
- */
+
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {

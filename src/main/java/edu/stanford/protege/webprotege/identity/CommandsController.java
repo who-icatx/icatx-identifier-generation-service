@@ -1,11 +1,9 @@
 package edu.stanford.protege.webprotege.identity;
 
+import edu.stanford.protege.webprotege.identity.ids.IdGenerationService;
 import edu.stanford.protege.webprotege.identity.project.ProjectService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -15,9 +13,13 @@ public class CommandsController {
 
 
     private final ProjectService projectService;
+    private final IdGenerationService idGenerationService;
 
-    public CommandsController(ProjectService projectService) {
+
+    public CommandsController(ProjectService projectService,
+                              IdGenerationService idGenerationService) {
         this.projectService = projectService;
+        this.idGenerationService = idGenerationService;
     }
 
 
@@ -25,5 +27,11 @@ public class CommandsController {
     public ResponseEntity<List<String>> registerProjects(@RequestBody List<String> projectIds) {
         List<String> registeredProjects = projectService.registerProjects(projectIds);
         return ResponseEntity.ok(registeredProjects);
+    }
+
+
+    @GetMapping("/id")
+    public String generateId(@RequestBody String prefix) {
+        return idGenerationService.generateUniqueId(prefix);
     }
 }
