@@ -1,10 +1,13 @@
 server:
   port: 7771
-  servlet.context-path: /icat/
+  servlet:
+    context-path: /icat/
 
 
 
-icatx.versioning.savebatchsize: 10000
+icatx:
+  versioning:
+    savebatchsize: 10000
 
 spring:
   application:
@@ -20,22 +23,31 @@ spring:
       port: 27017
       database: webprotege
       auto-index-creation: true
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://webprotege-local.edu/auth/realms/webprotege
+      client:
+        registration:
+          keycloak:
+            client-id: webprotege
+            authorization-grant-type: authorization_code
+            scope: openid
+        provider:
+          keycloak:
+            issuer-uri: http://webprotege-local.edu/auth/realms/webprotege
+            user-name-attribute: preferred_username
 
-webprotege.rabbitmq:
-  requestqueue: webprotege-identity-generation-queue
-  responsequeue: webprotege-identity-generation-response-queue
-  timeout: 60000
-  event-subscribe: true
-  events-queue: webprotege-identity-generation-events-queue
+webprotege:
+  rabbitmq:
+    requestqueue: webprotege-identity-generation-queue
+    responsequeue: webprotege-identity-generation-response-queue
+    timeout: 60000
+    event-subscribe: true
+    events-queue: webprotege-identity-generation-events-queue
+  readWriteLock:
+    timeoutInMillies: 1000
+    maxRetries: 5
 
 keycloak-issuer-url: http://webprotege-local.edu/auth/realms/webprotege/protocol/openid-connect/certs
-spring.security.oauth2:
-  client:
-    registration.keycloak:
-      client-id: webprotege
-      authorization-grant-type: authorization_code
-      scope: openid
-    provider.keycloak:
-      issuer-uri: http://webprotege-local.edu/auth/realms/webprotege
-      user-name-attribute: preferred_username
-  resourceserver.jwt.issuer-uri: http://webprotege-local.edu/auth/realms/webprotege

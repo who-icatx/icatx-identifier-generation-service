@@ -1,11 +1,12 @@
 package edu.stanford.protege.webprotege.identity.ids;
 
+import edu.stanford.protege.webprotege.identity.services.ReadWriteLockService;
 import org.springframework.stereotype.Service;
 
-import java.nio.charset.StandardCharsets;
-import java.security.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static edu.stanford.protege.webprotege.identity.ids.IdHelper.*;
 
 @Service
 public class IdGenerationService {
@@ -18,61 +19,51 @@ public class IdGenerationService {
     private volatile long lastSeedValue = -1;
     private final Set<String> existingIdsCache = ConcurrentHashMap.newKeySet();
 
+    private final ReadWriteLockService readWriteLock;
+
     public IdGenerationService(SeedRepository seedRepository,
-                               IdentificationRepository identificationRepository) {
+                               IdentificationRepository identificationRepository,
+                               ReadWriteLockService readWriteLock) {
         this.seedRepository = seedRepository;
         this.identificationRepository = identificationRepository;
+        this.readWriteLock = readWriteLock;
     }
 
     public String generateUniqueId(String prefix) {
-        if (existingIdsCache.isEmpty()) {
-            existingIdsCache.addAll(identificationRepository.getExistingIds());
-        }
+        return readWriteLock.executeWriteLock(() -> {
 
-        long seedValue = getNextSeedValue();
-        String uniqueId;
+            if (existingIdsCache.isEmpty()) {
+                existingIdsCache.addAll(identificationRepository.getExistingIds());
+            }
 
-        do {
-            uniqueId = String.format("%s%09d", prefix, extractNineDigitNumber(hashSeed(seedValue)));
-            seedValue++;
-        } while (existingIdsCache.contains(uniqueId));
+            long seedValue = getSeedValue();
+            String uniqueId;
 
-        existingIdsCache.add(uniqueId);
-        identificationRepository.saveListInPages(List.of(uniqueId));
+            do {
+                seedValue++;
+                uniqueId = String.format("%s%s", prefix, extractNineDigitNumberInStringFromHash(hashSeed(seedValue)));
+            } while (existingIdsCache.contains(uniqueId));
 
-        updateSeedValue(seedValue);
-        return uniqueId;
+            existingIdsCache.add(uniqueId);
+            identificationRepository.saveListInPages(List.of(uniqueId));
+
+            updateSeedValue(seedValue);
+            return uniqueId;
+        });
     }
 
 
-    private synchronized long getNextSeedValue() {
+    private synchronized long getSeedValue() {
         if (lastSeedValue == -1) {
-            lastSeedValue = seedRepository.findById(SEED_NAME).orElse(new Seed(SEED_NAME, 0)).getValue();
+            lastSeedValue = readWriteLock.executeReadLock(() -> seedRepository.findById(SEED_NAME).orElse(new Seed(SEED_NAME, 0)).getValue());
         }
-        return lastSeedValue + 1;
+        return lastSeedValue;
     }
 
     private void updateSeedValue(long seedValue) {
         lastSeedValue = seedValue;
-        seedRepository.save(new Seed(SEED_NAME, seedValue));
+        readWriteLock.executeWriteLock(() -> seedRepository.save(new Seed(SEED_NAME, seedValue)));
     }
 
-    private String hashSeed(long seedValue) {
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] hashBytes = digest.digest(String.valueOf(seedValue).getBytes(StandardCharsets.UTF_8));
 
-            StringBuilder hexString = new StringBuilder();
-            for (byte b : hashBytes) {
-                hexString.append(String.format("%02x", b));
-            }
-            return hexString.toString();
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException("Error generating hash", e);
-        }
-    }
-
-    private long extractNineDigitNumber(String hash) {
-        return (Long.parseLong(hash.substring(0, 9), 16) % 1_000_000_000L);
-    }
 }
