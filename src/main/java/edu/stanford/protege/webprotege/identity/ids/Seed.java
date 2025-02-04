@@ -3,8 +3,12 @@ package edu.stanford.protege.webprotege.identity.ids;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-@Document(collection = "seeds")
+import static edu.stanford.protege.webprotege.identity.ids.Seed.COLLECTION_NAME;
+
+@Document(collection = COLLECTION_NAME)
 public class Seed {
+
+    public static final String COLLECTION_NAME = "seeds";
     @Id
     private String name;
     private long value;
