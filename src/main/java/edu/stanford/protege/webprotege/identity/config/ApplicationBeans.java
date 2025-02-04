@@ -8,6 +8,8 @@ import edu.stanford.protege.webprotege.ipc.impl.CommandExecutorImpl;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.concurrent.locks.*;
+
 @Configuration
 public class ApplicationBeans {
 
@@ -16,4 +18,8 @@ public class ApplicationBeans {
         return new CommandExecutorImpl<>(GetAllOwlClassesResponse.class);
     }
 
+    @Bean
+    public ReadWriteLock readWriteLock() {
+        return new ReentrantReadWriteLock(true);
+    }
 }

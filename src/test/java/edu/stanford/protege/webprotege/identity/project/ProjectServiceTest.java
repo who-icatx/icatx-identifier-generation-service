@@ -1,30 +1,20 @@
-package edu.standford.protege.webprotege.identity.project;
+package edu.stanford.protege.webprotege.identity.project;
 
 import edu.stanford.protege.webprotege.common.ProjectId;
 import edu.stanford.protege.webprotege.identity.ids.IdentificationRepository;
-import edu.stanford.protege.webprotege.identity.project.GetAllOwlClassesRequest;
-import edu.stanford.protege.webprotege.identity.project.GetAllOwlClassesResponse;
-import edu.stanford.protege.webprotege.identity.project.ProjectService;
-import edu.stanford.protege.webprotege.ipc.CommandExecutor;
-import edu.stanford.protege.webprotege.ipc.ExecutionContext;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import edu.stanford.protege.webprotege.ipc.*;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
+import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.semanticweb.owlapi.model.IRI;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
+import java.util.*;
+import java.util.concurrent.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 
 @ExtendWith(MockitoExtension.class)
@@ -37,15 +27,14 @@ public class ProjectServiceTest {
 
     private ProjectService projectService;
 
-    ArgumentCaptor<List<String>> argumentCaptor = ArgumentCaptor.forClass(List.class);
     @BeforeEach
-    public void setUp(){
+    public void setUp() {
         projectService = new ProjectService(getAllClassesCommand, identificationRepository);
     }
 
 
     @Test
-    public void GIVEN_newProject_WHEN_noEntriesExist_THEN_newProjectIdsAreSaved() throws ExecutionException, InterruptedException {
+    public void GIVEN_newProject_WHEN_noEntriesExist_THEN_newProjectIdsAreSaved() {
         IRI iri1 = IRI.generateDocumentIRI();
         IRI iri2 = IRI.generateDocumentIRI();
         var resp = new GetAllOwlClassesResponse(Arrays.asList(iri1, iri2));
@@ -66,7 +55,7 @@ public class ProjectServiceTest {
     }
 
     @Test
-    public void GIVEN_newProject_WHEN_someEntriesAlreadyExist_THEN_onlyNewIdsAreAdded(){
+    public void GIVEN_newProject_WHEN_someEntriesAlreadyExist_THEN_onlyNewIdsAreAdded() {
         IRI iri1 = IRI.generateDocumentIRI();
         IRI iri2 = IRI.generateDocumentIRI();
         IRI iri3 = IRI.generateDocumentIRI();

@@ -2,14 +2,12 @@ package edu.stanford.protege.webprotege.identity.ids;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import edu.stanford.protege.webprotege.common.ProjectId;
+import edu.stanford.protege.webprotege.identity.services.ReadWriteLockService;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.mongodb.core.BulkOperations;
-import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.*;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.StreamSupport;
 
 import static edu.stanford.protege.webprotege.identity.ids.OwlId.IDS_COLLECTION;
@@ -26,37 +24,47 @@ public class IdentificationRepository {
 
     private final ObjectMapper objectMapper;
 
-    public IdentificationRepository(MongoTemplate mongoTemplate, ObjectMapper objectMapper) {
+    private final ReadWriteLockService readWriteLock;
+
+    public IdentificationRepository(MongoTemplate mongoTemplate,
+                                    ObjectMapper objectMapper,
+                                    ReadWriteLockService readWriteLock) {
         this.mongoTemplate = mongoTemplate;
         this.objectMapper = objectMapper;
+        this.readWriteLock = readWriteLock;
     }
 
     public List<String> getExistingIds() {
-        return StreamSupport.stream(mongoTemplate.getCollection(IDS_COLLECTION)
+        return readWriteLock.executeReadLock(() -> StreamSupport.stream(mongoTemplate.getCollection(IDS_COLLECTION)
                                 .find().spliterator(),
                         false
                 )
                 .map(doc -> objectMapper.convertValue(doc, OwlId.class))
                 .map(OwlId::getValue)
-                .collect(toList());
+                .collect(toList()));
     }
+
     // Method to save the list in pages of 1000 elements
     public void saveListInPages(List<String> idsToBeSaved) {
-        // Split the list into chunks of 1000
-        List<List<String>> chunks = splitListIntoChunks(idsToBeSaved);
 
-        for (List<String> chunk : chunks) {
-            // Convert each chunk into StringDocument objects
-            List<OwlId> documents = new ArrayList<>();
-            for (String value : chunk) {
-                documents.add(new OwlId(value));
+        readWriteLock.executeWriteLock(() -> {
+            // Split the list into chunks of 1000
+            List<List<String>> chunks = splitListIntoChunks(idsToBeSaved);
+
+            for (List<String> chunk : chunks) {
+                // Convert each chunk into StringDocument objects
+                List<OwlId> documents = new ArrayList<>();
+                for (String value : chunk) {
+                    documents.add(new OwlId(value));
+                }
+
+                // Perform bulk insert for the current chunk
+                BulkOperations bulkOps = mongoTemplate.bulkOps(BulkOperations.BulkMode.UNORDERED, OwlId.class);
+                bulkOps.insert(documents);
+                bulkOps.execute();
             }
+        });
 
-            // Perform bulk insert for the current chunk
-            BulkOperations bulkOps = mongoTemplate.bulkOps(BulkOperations.BulkMode.UNORDERED, OwlId.class);
-            bulkOps.insert(documents);
-            bulkOps.execute();
-        }
     }
 
     // Utility method to split a list into chunks

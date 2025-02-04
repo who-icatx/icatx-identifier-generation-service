@@ -7,11 +7,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
 
-/**
- * Matthew Horridge
- * Stanford Center for Biomedical Informatics Research
- * 2021-07-19
- */
+
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
@@ -20,7 +16,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("/identity-commands/**").hasRole("ICAT_APPLICATION")
+                        .requestMatchers("/identity-commands/**").hasRole("ICATX_APPLICATION")
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2
