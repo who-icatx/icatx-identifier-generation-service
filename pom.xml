@@ -9,9 +9,9 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>edu.stanford.protege</groupId>
-	<artifactId>icatx-identity-generation-service</artifactId>
+	<artifactId>icatx-id-generation-service</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>icatx-identity-generation-service</name>
+	<name>icatx-id-generation-service</name>
 	<description>A service that handles the ID generation of OWL classes so they are unique across all projects</description>
 	<properties>
 		<java.version>17</java.version>

@@ -7,7 +7,7 @@ server:
 
 icatx:
   versioning:
-    savebatchsize: 10000
+    savebatchsize: 1000
 
 spring:
   application:

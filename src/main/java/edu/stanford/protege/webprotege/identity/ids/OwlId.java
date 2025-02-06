@@ -1,5 +1,6 @@
 package edu.stanford.protege.webprotege.identity.ids;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -9,6 +10,7 @@ public class OwlId {
     public final static String IDS_COLLECTION = "OwlIds";
 
     @Id
+    @JsonProperty("_id")
     private String value;
 
     public OwlId(String value) {

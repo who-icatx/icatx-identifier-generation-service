@@ -14,7 +14,9 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 @Service
 public class ProjectService {
@@ -35,7 +37,7 @@ public class ProjectService {
         List<String> response = new ArrayList<>();
         for(String projectId: projectIds) {
             try {
-                handleNewProjectCreated(ProjectId.valueOf(projectId), SecurityContextHelper.getExecutionContext());
+                registerProject(ProjectId.valueOf(projectId), SecurityContextHelper.getExecutionContext());
                 response.add(projectId);
             } catch (Exception e) {
                 LOGGER.error("Error registering project " + projectId,e);
@@ -44,11 +46,11 @@ public class ProjectService {
         return response;
     }
 
-    public void handleNewProjectCreated(ProjectId projectId, ExecutionContext executionContext) {
+    public void registerProject(ProjectId projectId, ExecutionContext executionContext) {
         try {
-            List<String> newIds = getAllClassesCommand.execute(new GetAllOwlClassesRequest(projectId), executionContext)
+            Set<String> newIds = getAllClassesCommand.execute(new GetAllOwlClassesRequest(projectId), executionContext)
                     .get()
-                    .owlClassList().stream().map(IRI::toString).toList();
+                    .owlClassList().stream().map(IRI::toString).collect(Collectors.toSet());
             List<String> existingIds = identificationRepository.getExistingIds();
 
             HashSet<String> existingIdsSet;
@@ -59,9 +61,9 @@ public class ProjectService {
                 existingIdsSet = new HashSet<>(existingIds);
             }
 
-            existingIdsSet.addAll(newIds);
+            newIds.removeAll(existingIdsSet);
 
-            this.identificationRepository.saveListInPages(existingIdsSet.stream().toList());
+            this.identificationRepository.saveListInPages(newIds.stream().toList());
         } catch (InterruptedException | ExecutionException e) {
             throw new RuntimeException(e);
         }

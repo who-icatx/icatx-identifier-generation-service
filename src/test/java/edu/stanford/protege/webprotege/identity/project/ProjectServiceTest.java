@@ -40,7 +40,7 @@ public class ProjectServiceTest {
         var resp = new GetAllOwlClassesResponse(Arrays.asList(iri1, iri2));
         when(getAllClassesCommand.execute(any(), any())).thenReturn(CompletableFuture.supplyAsync(() -> resp));
 
-        projectService.handleNewProjectCreated(ProjectId.generate(), new ExecutionContext());
+        projectService.registerProject(ProjectId.generate(), new ExecutionContext());
 
         // Assert
         ArgumentCaptor<List<String>> argumentCaptor = ArgumentCaptor.forClass(List.class);
@@ -64,7 +64,7 @@ public class ProjectServiceTest {
         when(getAllClassesCommand.execute(any(), any())).thenReturn(CompletableFuture.supplyAsync(() -> resp));
         when(identificationRepository.getExistingIds()).thenReturn(Arrays.asList(iri2.toString(), iri3.toString()));
 
-        projectService.handleNewProjectCreated(ProjectId.generate(), new ExecutionContext());
+        projectService.registerProject(ProjectId.generate(), new ExecutionContext());
 
         // Assert
         ArgumentCaptor<List<String>> argumentCaptor = ArgumentCaptor.forClass(List.class);
@@ -73,10 +73,8 @@ public class ProjectServiceTest {
         // Verify the captured values
         List<String> capturedIds = argumentCaptor.getValue();
         assertNotNull(capturedIds);
-        assertEquals(3, capturedIds.size());
+        assertEquals(1, capturedIds.size());
         assertTrue(capturedIds.contains(iri1.toString()));
-        assertTrue(capturedIds.contains(iri2.toString()));
-        assertTrue(capturedIds.contains(iri3.toString()));
 
     }
 

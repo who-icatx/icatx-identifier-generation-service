@@ -40,6 +40,6 @@ public class NewProjectEventHandler implements EventHandler<NewProjectEvent> {
     }
     @Override
     public void handleEvent(NewProjectEvent event, ExecutionContext executionContext) {
-        this.projectService.handleNewProjectCreated(event.projectId(), executionContext);
+        this.projectService.registerProject(event.projectId(), executionContext);
     }
 }
