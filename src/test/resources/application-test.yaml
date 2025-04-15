@@ -7,19 +7,19 @@ server:
 
 icatx:
   versioning:
-    savebatchsize: 1000
+    savebatchsize: 10000
 
 spring:
   application:
     name: IcatxIdentityGeneration
   rabbitmq:
-    host: rabbitmq
+    host: localhost
     port: 5672
     username: guest
     password: guest
   data:
     mongodb:
-      host: mongo
+      host: localhost
       port: 27017
       database: webprotege
       auto-index-creation: true
