@@ -1,16 +1,18 @@
 package edu.stanford.protege.webprotege.identity.ids;
 
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.client.model.InsertOneModel;
 import edu.stanford.protege.webprotege.identity.services.ReadWriteLockService;
 import org.bson.Document;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.core.*;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.concurrent.Callable;
 import java.util.stream.StreamSupport;
 
 import static edu.stanford.protege.webprotege.identity.ids.OwlId.IDS_COLLECTION;
@@ -19,14 +21,11 @@ import static java.util.stream.Collectors.toList;
 @Repository
 public class IdentificationRepository {
 
-
     @Value("${icatx.versioning.savebatchsize}")
     private int batchSize;
 
     private final MongoTemplate mongoTemplate;
-
     private final ObjectMapper objectMapper;
-
     private final ReadWriteLockService readWriteLock;
 
     public IdentificationRepository(MongoTemplate mongoTemplate,
@@ -35,6 +34,15 @@ public class IdentificationRepository {
         this.mongoTemplate = mongoTemplate;
         this.objectMapper = objectMapper;
         this.readWriteLock = readWriteLock;
+    }
+
+    public boolean exists(String id) {
+        return readWriteLock.executeReadLock(() ->
+            mongoTemplate.exists(
+                Query.query(Criteria.where("value").is(id)),
+                IDS_COLLECTION
+            )
+        );
     }
 
     public List<String> getExistingIds() {
