@@ -18,16 +18,13 @@ public class IdGenerationService {
     private static final Logger logger = LoggerFactory.getLogger(IdGenerationService.class);
     private final SeedRepository seedRepository;
     private final IdentificationRepository identificationRepository;
-    private final MongoTemplate mongoTemplate;
     private static final String SEED_NAME = "id_seed";
     private volatile long lastSeedValue = -1;
 
     public IdGenerationService(SeedRepository seedRepository,
-                             IdentificationRepository identificationRepository,
-                             MongoTemplate mongoTemplate) {
+                             IdentificationRepository identificationRepository) {
         this.seedRepository = seedRepository;
         this.identificationRepository = identificationRepository;
-        this.mongoTemplate = mongoTemplate;
     }
 
     @Transactional
