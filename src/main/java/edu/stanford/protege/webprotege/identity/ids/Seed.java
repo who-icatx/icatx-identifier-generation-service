@@ -1,6 +1,7 @@
 package edu.stanford.protege.webprotege.identity.ids;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Version;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import static edu.stanford.protege.webprotege.identity.ids.Seed.COLLECTION_NAME;
@@ -12,6 +13,9 @@ public class Seed {
     @Id
     private String name;
     private long value;
+    
+    @Version
+    private Long version;
 
     public Seed() {}
 
@@ -34,5 +38,13 @@ public class Seed {
 
     public void setValue(long value) {
         this.value = value;
+    }
+
+    public Long getVersion() {
+        return version;
+    }
+
+    public void setVersion(Long version) {
+        this.version = version;
     }
 }

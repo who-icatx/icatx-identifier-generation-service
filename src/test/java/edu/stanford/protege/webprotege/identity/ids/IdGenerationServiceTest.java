@@ -1,6 +1,5 @@
 package edu.stanford.protege.webprotege.identity.ids;
 
-import edu.stanford.protege.webprotege.identity.services.ReadWriteLockService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -8,10 +7,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.*;
-import java.util.concurrent.Callable;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -23,35 +22,18 @@ public class IdGenerationServiceTest {
     @Mock
     private IdentificationRepository identificationRepository;
 
-    @Mock
-    private ReadWriteLockService readWriteLock;
-
     private IdGenerationService idGenerationService;
     private final String prefix = "somePrefix/";
 
-
     @BeforeEach
     public void setUp() {
-        when(readWriteLock.executeWriteLock(any(Callable.class))).thenAnswer(invocation -> {
-            Callable<?> callable = invocation.getArgument(0);
-            return callable.call();
-        });
-        when(readWriteLock.executeReadLock(any(Callable.class))).thenAnswer(invocation -> {
-            Callable<?> callable = invocation.getArgument(0);
-            return callable.call();
-        });
-
         when(seedRepository.findById("id_seed")).thenReturn(Optional.of(new Seed("id_seed", 0)));
-
-        doNothing().when(identificationRepository).saveListInPages(any());
-
-        idGenerationService = new IdGenerationService(seedRepository, identificationRepository, readWriteLock);
+        when(identificationRepository.exists(anyString())).thenReturn(false);
+        idGenerationService = new IdGenerationService(seedRepository, identificationRepository);
     }
 
     @Test
     public void GIVEN_noExistingIds_WHEN_generateUniqueId_isCalled_THEN_validUniqueIdIsReturned() {
-        when(identificationRepository.getExistingIds()).thenReturn(Collections.emptyList());
-
         String uniqueId = idGenerationService.generateUniqueId(prefix);
 
         assertNotNull(uniqueId);
@@ -69,15 +51,17 @@ public class IdGenerationServiceTest {
     public void GIVEN_existingIds_WHEN_generateUniqueId_isCalled_THEN_onlyNewIdIsAdded() {
         String valueForSeedOne = IdHelper.extractNineDigitNumberInStringFromHash(IdHelper.hashSeed(1));
         String valueForSeedTwo = IdHelper.extractNineDigitNumberInStringFromHash(IdHelper.hashSeed(2));
+        String existingId1 = prefix + valueForSeedOne;
+        String existingId2 = prefix + valueForSeedTwo;
+        Set<String> existingIds = Set.of(existingId1, existingId2);
 
-        when(identificationRepository.getExistingIds()).thenReturn(
-                Arrays.asList(prefix + valueForSeedOne, prefix + valueForSeedTwo)
-        );
+        when(identificationRepository.exists(anyString()))
+            .thenAnswer(invocation -> existingIds.contains(invocation.getArgument(0)));
 
         String uniqueId = idGenerationService.generateUniqueId(prefix);
 
         assertNotNull(uniqueId);
-        assertFalse(Arrays.asList(prefix + valueForSeedOne, prefix + valueForSeedTwo).contains(uniqueId),
+        assertFalse(existingIds.contains(uniqueId),
                 "The new ID should not match any existing IDs");
 
         verify(identificationRepository).saveListInPages(argThat(list ->
@@ -87,9 +71,7 @@ public class IdGenerationServiceTest {
 
     @Test
     public void GIVEN_seedExists_WHEN_generateUniqueId_isCalled_THEN_seedIsUpdated() {
-        when(identificationRepository.getExistingIds()).thenReturn(Collections.emptyList());
-
-        String uniqueId = idGenerationService.generateUniqueId(prefix);
+        idGenerationService.generateUniqueId(prefix);
 
         verify(seedRepository).save(argThat(seed ->
                 seed.getName().equals("id_seed") && seed.getValue() > 0
@@ -98,8 +80,6 @@ public class IdGenerationServiceTest {
 
     @Test
     public void GIVEN_noCache_WHEN_generateUniqueId_isCalledMultipleTimes_THEN_idsAreUnique() {
-        when(identificationRepository.getExistingIds()).thenReturn(Collections.emptyList());
-
         String uniqueId1 = idGenerationService.generateUniqueId(prefix);
         String uniqueId2 = idGenerationService.generateUniqueId(prefix);
 
@@ -110,18 +90,17 @@ public class IdGenerationServiceTest {
 
     @Test
     public void GIVEN_candidateAlreadyExists_WHEN_generateUniqueId_isCalled_THEN_nextCandidateIsUsed() {
-        // first value for seedValue=1
         String valueForSeedOne = IdHelper.extractNineDigitNumberInStringFromHash(IdHelper.hashSeed(1));
+        String existingId = prefix + valueForSeedOne;
+        Set<String> existingIds = Set.of(existingId);
 
-        when(identificationRepository.getExistingIds()).thenReturn(List.of(prefix+valueForSeedOne));
+        when(identificationRepository.exists(anyString()))
+            .thenAnswer(invocation -> existingIds.contains(invocation.getArgument(0)));
 
-        // because we already have a value for seedValue=1 then it will need to generate for seedValue=2
         String uniqueId = idGenerationService.generateUniqueId(prefix);
 
-        // here we make sure it generate with seedValue=2 and it did not keep the value for seedValue=1
-        assertNotEquals(valueForSeedOne, uniqueId, "The generated ID should differ from the colliding candidate");
+        assertNotEquals(existingId, uniqueId, "The generated ID should differ from the colliding candidate");
 
-        // check that we save the latest seedValue
         verify(seedRepository).save(argThat(seed ->
                 seed.getName().equals("id_seed") && seed.getValue() == 2
         ));
