@@ -1,6 +1,7 @@
 package edu.stanford.protege.webprotege.identity.ids;
 
 import edu.stanford.protege.webprotege.identity.services.ReadWriteLockService;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -20,6 +21,7 @@ public class IdGenerationService {
     private final Set<String> existingIdsCache = ConcurrentHashMap.newKeySet();
 
     private final ReadWriteLockService readWriteLock;
+    private static final int MAX_RETRIES = 3;
 
     public IdGenerationService(SeedRepository seedRepository,
                                IdentificationRepository identificationRepository,
@@ -30,28 +32,38 @@ public class IdGenerationService {
     }
 
     public String generateUniqueId(String prefix) {
+        if (existingIdsCache.isEmpty()) {
+            existingIdsCache.addAll(identificationRepository.getExistingIds());
+        }
 
+        int retryCount = 0;
+        while (retryCount < MAX_RETRIES) {
+            try {
+                long seedValue = getSeedValue();
+                String uniqueId;
 
-            if (existingIdsCache.isEmpty()) {
+                do {
+                    seedValue++;
+                    uniqueId = String.format("%s%s", prefix, extractNineDigitNumberInStringFromHash(hashSeed(seedValue)));
+                } while (existingIdsCache.contains(uniqueId));
+
+                existingIdsCache.add(uniqueId);
+                identificationRepository.saveListInPages(List.of(uniqueId));
+                updateSeedValue(seedValue);
+                return uniqueId;
+
+            } catch (DuplicateKeyException e) {
+                retryCount++;
+                if (retryCount >= MAX_RETRIES) {
+                    throw new RuntimeException("Failed to generate unique ID after " + MAX_RETRIES + " attempts", e);
+                }
+                // Clear the cache to ensure we get fresh data on next attempt
+                existingIdsCache.clear();
                 existingIdsCache.addAll(identificationRepository.getExistingIds());
             }
-
-            long seedValue = getSeedValue();
-            String uniqueId;
-
-            do {
-                seedValue++;
-                uniqueId = String.format("%s%s", prefix, extractNineDigitNumberInStringFromHash(hashSeed(seedValue)));
-            } while (existingIdsCache.contains(uniqueId));
-
-            existingIdsCache.add(uniqueId);
-            identificationRepository.saveListInPages(List.of(uniqueId));
-
-            updateSeedValue(seedValue);
-            return uniqueId;
-
+        }
+        throw new RuntimeException("Failed to generate unique ID after " + MAX_RETRIES + " attempts");
     }
-
 
     private synchronized long getSeedValue() {
         if (lastSeedValue == -1) {
@@ -64,6 +76,4 @@ public class IdGenerationService {
         lastSeedValue = seedValue;
         readWriteLock.executeWriteLock(() -> seedRepository.save(new Seed(SEED_NAME, seedValue)));
     }
-
-
 }
