@@ -6,6 +6,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import java.util.*;
 import java.util.concurrent.Callable;
@@ -15,6 +17,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class IdGenerationServiceTest {
 
     @Mock
@@ -73,6 +76,8 @@ public class IdGenerationServiceTest {
         when(identificationRepository.getExistingIds()).thenReturn(
                 Arrays.asList(prefix + valueForSeedOne, prefix + valueForSeedTwo)
         );
+        lenient().when(identificationRepository.existsById(prefix + valueForSeedOne)).thenReturn(true);
+        lenient().when(identificationRepository.existsById(prefix + valueForSeedTwo)).thenReturn(true);
 
         String uniqueId = idGenerationService.generateUniqueId(prefix);
 
@@ -114,6 +119,7 @@ public class IdGenerationServiceTest {
         String valueForSeedOne = IdHelper.extractNineDigitNumberInStringFromHash(IdHelper.hashSeed(1));
 
         when(identificationRepository.getExistingIds()).thenReturn(List.of(prefix+valueForSeedOne));
+        lenient().when(identificationRepository.existsById(prefix + valueForSeedOne)).thenReturn(true);
 
         // because we already have a value for seedValue=1 then it will need to generate for seedValue=2
         String uniqueId = idGenerationService.generateUniqueId(prefix);

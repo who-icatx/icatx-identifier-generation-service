@@ -3,6 +3,8 @@ package edu.stanford.protege.webprotege.identity.commands;
 
 import edu.stanford.protege.webprotege.identity.ids.IdGenerationService;
 import edu.stanford.protege.webprotege.ipc.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 
 import javax.annotation.Nonnull;
@@ -10,6 +12,7 @@ import javax.annotation.Nonnull;
 @WebProtegeHandler
 public class GetUniqueIdCommandHandler implements CommandHandler<GetUniqueIdRequest, GetUniqueIdResponse> {
 
+    private final static Logger LOGGER = LoggerFactory.getLogger(GetUniqueIdCommandHandler.class);
     private final IdGenerationService idGenerationService;
 
     public GetUniqueIdCommandHandler(IdGenerationService idGenerationService) {
@@ -30,9 +33,13 @@ public class GetUniqueIdCommandHandler implements CommandHandler<GetUniqueIdRequ
 
     @Override
     public Mono<GetUniqueIdResponse> handleRequest(GetUniqueIdRequest request, ExecutionContext executionContext) {
-        String uniqueId = idGenerationService.generateUniqueId(request.prefix());
-        var response = new GetUniqueIdResponse(uniqueId);
-
-        return Mono.just(response);
+        try {
+            String uniqueId = idGenerationService.generateUniqueId(request.prefix());
+            var response = new GetUniqueIdResponse(uniqueId);
+            return Mono.just(response);
+        }catch (Exception e) {
+            LOGGER.error("Error generating unique id ", e);
+            throw new RuntimeException(e);
+        }
     }
 }
