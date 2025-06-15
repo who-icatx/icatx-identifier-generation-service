@@ -4,7 +4,6 @@ import edu.stanford.protege.webprotege.identity.services.ReadWriteLockService;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 import static edu.stanford.protege.webprotege.identity.ids.IdHelper.*;
 
@@ -12,13 +11,9 @@ import static edu.stanford.protege.webprotege.identity.ids.IdHelper.*;
 public class IdGenerationService {
 
     private final SeedRepository seedRepository;
-
     private final IdentificationRepository identificationRepository;
-
     private static final String SEED_NAME = "id_seed";
     private volatile long lastSeedValue = -1;
-    private final Set<String> existingIdsCache = ConcurrentHashMap.newKeySet();
-
     private final ReadWriteLockService readWriteLock;
 
     public IdGenerationService(SeedRepository seedRepository,
@@ -31,27 +26,19 @@ public class IdGenerationService {
 
     public String generateUniqueId(String prefix) {
         return readWriteLock.executeWriteLock(() -> {
-
-            if (existingIdsCache.isEmpty()) {
-                existingIdsCache.addAll(identificationRepository.getExistingIds());
-            }
-
             long seedValue = getSeedValue();
             String uniqueId;
 
             do {
                 seedValue++;
                 uniqueId = String.format("%s%s", prefix, extractNineDigitNumberInStringFromHash(hashSeed(seedValue)));
-            } while (existingIdsCache.contains(uniqueId));
+            } while (identificationRepository.existsById(uniqueId));
 
-            existingIdsCache.add(uniqueId);
             identificationRepository.saveListInPages(List.of(uniqueId));
-
             updateSeedValue(seedValue);
             return uniqueId;
         });
     }
-
 
     private synchronized long getSeedValue() {
         if (lastSeedValue == -1) {
@@ -64,6 +51,4 @@ public class IdGenerationService {
         lastSeedValue = seedValue;
         readWriteLock.executeWriteLock(() -> seedRepository.save(new Seed(SEED_NAME, seedValue)));
     }
-
-
 }

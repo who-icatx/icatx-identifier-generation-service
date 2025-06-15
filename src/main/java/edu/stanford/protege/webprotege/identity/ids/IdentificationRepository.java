@@ -1,12 +1,13 @@
 package edu.stanford.protege.webprotege.identity.ids;
 
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.client.model.InsertOneModel;
 import edu.stanford.protege.webprotege.identity.services.ReadWriteLockService;
 import org.bson.Document;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.core.*;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,14 +20,11 @@ import static java.util.stream.Collectors.toList;
 @Repository
 public class IdentificationRepository {
 
-
     @Value("${icatx.versioning.savebatchsize}")
     private int batchSize;
 
     private final MongoTemplate mongoTemplate;
-
     private final ObjectMapper objectMapper;
-
     private final ReadWriteLockService readWriteLock;
 
     public IdentificationRepository(MongoTemplate mongoTemplate,
@@ -35,6 +33,15 @@ public class IdentificationRepository {
         this.mongoTemplate = mongoTemplate;
         this.objectMapper = objectMapper;
         this.readWriteLock = readWriteLock;
+    }
+
+    public boolean existsById(String id) {
+        return readWriteLock.executeReadLock(() -> 
+            mongoTemplate.exists(
+                Query.query(Criteria.where("value").is(id)),
+                IDS_COLLECTION
+            )
+        );
     }
 
     public List<String> getExistingIds() {
@@ -65,7 +72,6 @@ public class IdentificationRepository {
             collection.bulkWrite(documents);
         }
     }
-
 
     // Utility method to split a list into chunks
     private List<List<String>> splitListIntoChunks(List<String> list) {
