@@ -38,7 +38,7 @@ public class IdentificationRepository {
     public boolean existsById(String id) {
         return readWriteLock.executeReadLock(() -> 
             mongoTemplate.exists(
-                Query.query(Criteria.where("value").is(id)),
+                Query.query(Criteria.where("_id").is(id)),
                 IDS_COLLECTION
             )
         );
