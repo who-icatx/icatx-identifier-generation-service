@@ -27,14 +27,17 @@ public class IdGenerationService {
     public String generateUniqueId(String prefix) {
         return readWriteLock.executeWriteLock(() -> {
             long seedValue = getSeedValue();
-            String uniqueId;
+            String uniqueId = null;
+            boolean saved = false;
 
-            do {
+            while (!saved) {
                 seedValue++;
                 uniqueId = String.format("%s%s", prefix, extractNineDigitNumberInStringFromHash(hashSeed(seedValue)));
-            } while (identificationRepository.existsById(uniqueId));
+                
+                // Try to save the ID atomically - if it already exists, this will fail
+                saved = identificationRepository.trySaveId(uniqueId);
+            }
 
-            identificationRepository.saveListInPages(List.of(uniqueId));
             updateSeedValue(seedValue);
             return uniqueId;
         });

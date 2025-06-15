@@ -44,6 +44,19 @@ public class IdentificationRepository {
         );
     }
 
+    public boolean trySaveId(String id) {
+        return readWriteLock.executeWriteLock(() -> {
+            try {
+                // Try to insert the ID - if it already exists, this will fail
+                mongoTemplate.insert(new OwlId(id), IDS_COLLECTION);
+                return true;
+            } catch (Exception e) {
+                // If we get a duplicate key error, the ID already exists
+                return false;
+            }
+        });
+    }
+
     public List<String> getExistingIds() {
         return readWriteLock.executeReadLock(() -> StreamSupport.stream(mongoTemplate.getCollection(IDS_COLLECTION)
                                 .find().spliterator(),
