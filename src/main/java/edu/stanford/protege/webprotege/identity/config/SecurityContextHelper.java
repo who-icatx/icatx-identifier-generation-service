@@ -7,6 +7,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 
+import java.util.UUID;
+
 public class SecurityContextHelper {
 
     public static ExecutionContext getExecutionContext() {
@@ -17,7 +19,7 @@ public class SecurityContextHelper {
 
             Jwt jwt = jwtAuthToken.getToken();
             String userId = jwt.getClaimAsString("preferred_username");
-            return new ExecutionContext(UserId.valueOf(userId), jwt.getTokenValue());
+            return new ExecutionContext(UserId.valueOf(userId), jwt.getTokenValue(), UUID.randomUUID().toString());
         }
 
         return null;

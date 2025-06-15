@@ -38,13 +38,13 @@ public class IdentificationRepository {
     }
 
     public List<String> getExistingIds() {
-        return readWriteLock.executeReadLock(() -> StreamSupport.stream(mongoTemplate.getCollection(IDS_COLLECTION)
+        return StreamSupport.stream(mongoTemplate.getCollection(IDS_COLLECTION)
                                 .find().spliterator(),
                         false
                 )
                 .map(doc -> objectMapper.convertValue(doc, OwlId.class))
                 .map(OwlId::getValue)
-                .collect(toList()));
+                .collect(toList());
     }
 
     // Method to save the list in pages of 1000 elements

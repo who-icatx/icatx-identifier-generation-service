@@ -30,7 +30,7 @@ public class IdGenerationService {
     }
 
     public String generateUniqueId(String prefix) {
-        return readWriteLock.executeWriteLock(() -> {
+
 
             if (existingIdsCache.isEmpty()) {
                 existingIdsCache.addAll(identificationRepository.getExistingIds());
@@ -49,13 +49,13 @@ public class IdGenerationService {
 
             updateSeedValue(seedValue);
             return uniqueId;
-        });
+
     }
 
 
     private synchronized long getSeedValue() {
         if (lastSeedValue == -1) {
-            lastSeedValue = readWriteLock.executeReadLock(() -> seedRepository.findById(SEED_NAME).orElse(new Seed(SEED_NAME, 0)).getValue());
+            lastSeedValue = seedRepository.findById(SEED_NAME).orElse(new Seed(SEED_NAME, 0)).getValue();
         }
         return lastSeedValue;
     }
