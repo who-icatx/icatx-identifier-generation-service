@@ -73,6 +73,12 @@ public class IdentificationRepository {
         }
     }
 
+    public void saveId(String id) {
+        var docToBeSaved = objectMapper.convertValue(new OwlId(id), Document.class);
+        var collection = mongoTemplate.getCollection(IDS_COLLECTION);
+        collection.insertOne(docToBeSaved);
+    }
+
     // Utility method to split a list into chunks
     private List<List<String>> splitListIntoChunks(List<String> list) {
         List<List<String>> chunks = new ArrayList<>();

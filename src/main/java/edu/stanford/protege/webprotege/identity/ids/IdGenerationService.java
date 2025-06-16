@@ -43,7 +43,7 @@ public class IdGenerationService {
                 LOGGER.info("Trying to generate id " + uniqueId);
             } while (identificationRepository.existsById(uniqueId));
 
-            identificationRepository.saveListInPages(List.of(uniqueId));
+            identificationRepository.saveId(uniqueId);
 
             updateSeedValue(seedValue);
             return uniqueId;
