@@ -63,9 +63,7 @@ public class IdGenerationServiceTest {
         assertEquals(9, numericPart.length(), "The numeric part should have 9 digits");
         assertTrue(numericPart.matches("\\d{9}"), "The numeric part should be numeric");
 
-        verify(identificationRepository).saveListInPages(argThat(list ->
-                list.size() == 1 && list.contains(uniqueId)
-        ));
+        verify(identificationRepository).saveId(uniqueId);
     }
 
     @Test
@@ -85,9 +83,7 @@ public class IdGenerationServiceTest {
         assertFalse(Arrays.asList(prefix + valueForSeedOne, prefix + valueForSeedTwo).contains(uniqueId),
                 "The new ID should not match any existing IDs");
 
-        verify(identificationRepository).saveListInPages(argThat(list ->
-                list.size() == 1 && list.contains(uniqueId)
-        ));
+        verify(identificationRepository).saveId(uniqueId);
     }
 
     @Test
