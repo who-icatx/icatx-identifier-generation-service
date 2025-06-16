@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.client.model.InsertOneModel;
 import edu.stanford.protege.webprotege.identity.services.ReadWriteLockService;
 import org.bson.Document;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.core.*;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -20,6 +22,7 @@ import static java.util.stream.Collectors.toList;
 @Repository
 public class IdentificationRepository {
 
+    private final static Logger LOGGER = LoggerFactory.getLogger(IdentificationRepository.class);
     @Value("${icatx.versioning.savebatchsize}")
     private int batchSize;
 
@@ -74,6 +77,7 @@ public class IdentificationRepository {
     }
 
     public void saveId(String id) {
+        LOGGER.info("Saving id " + id);
         var docToBeSaved = objectMapper.convertValue(new OwlId(id), Document.class);
         var collection = mongoTemplate.getCollection(IDS_COLLECTION);
         collection.insertOne(docToBeSaved);

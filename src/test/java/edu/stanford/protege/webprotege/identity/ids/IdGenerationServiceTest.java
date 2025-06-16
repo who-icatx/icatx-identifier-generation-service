@@ -102,6 +102,8 @@ public class IdGenerationServiceTest {
         when(identificationRepository.getExistingIds()).thenReturn(Collections.emptyList());
 
         String uniqueId1 = idGenerationService.generateUniqueId(prefix);
+
+        when(seedRepository.findById(any())).thenReturn(Optional.of(new Seed("", 1)));
         String uniqueId2 = idGenerationService.generateUniqueId(prefix);
 
         assertNotNull(uniqueId1);

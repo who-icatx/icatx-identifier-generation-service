@@ -33,7 +33,7 @@ public class IdGenerationService {
         this.readWriteLock = readWriteLock;
     }
 
-    public String generateUniqueId(String prefix) {
+    public synchronized String generateUniqueId(String prefix) {
             long seedValue = getSeedValue();
             String uniqueId;
 
@@ -42,25 +42,20 @@ public class IdGenerationService {
                 uniqueId = String.format("%s%s", prefix, extractNineDigitNumberInStringFromHash(hashSeed(seedValue)));
                 LOGGER.info("Trying to generate id " + uniqueId);
             } while (identificationRepository.existsById(uniqueId));
+            updateSeedValue(seedValue);
 
             identificationRepository.saveId(uniqueId);
-
-            updateSeedValue(seedValue);
             return uniqueId;
 
     }
 
 
     private synchronized long getSeedValue() {
-        if (lastSeedValue == -1) {
-            lastSeedValue = seedRepository.findById(SEED_NAME).orElse(new Seed(SEED_NAME, 0)).getValue();
-        }
-        return lastSeedValue;
+        return seedRepository.findById(SEED_NAME).orElse(new Seed(SEED_NAME, 0)).getValue();
     }
 
     private void updateSeedValue(long seedValue) {
-        lastSeedValue = seedValue;
-        readWriteLock.executeWriteLock(() -> seedRepository.save(new Seed(SEED_NAME, seedValue)));
+        seedRepository.save(new Seed(SEED_NAME, seedValue));
     }
 
 
