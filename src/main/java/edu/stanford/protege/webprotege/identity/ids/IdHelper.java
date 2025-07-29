@@ -31,17 +31,4 @@ public class IdHelper {
         long number = Math.abs(random.nextLong()) % 1_000_000_000L;
         return String.format("%09d", number);
     }
-
-    // Keep the old methods for backward compatibility if needed
-    @Deprecated
-    public static String hashSeed(long seedValue) {
-        // This method is kept for backward compatibility but should not be used
-        throw new UnsupportedOperationException("hashSeed is deprecated. Use generateNineDigitNumber instead.");
-    }
-
-    @Deprecated
-    public static String extractNineDigitNumberInStringFromHash(String hash) {
-        // This method is kept for backward compatibility but should not be used
-        throw new UnsupportedOperationException("extractNineDigitNumberInStringFromHash is deprecated. Use generateNineDigitNumber instead.");
-    }
 }

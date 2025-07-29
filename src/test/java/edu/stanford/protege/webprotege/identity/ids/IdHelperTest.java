@@ -64,14 +64,4 @@ public class IdHelperTest {
 
         assertNotEquals(result1, result2, "Random generator should produce different outputs for different seed values");
     }
-
-    @Test
-    public void GIVEN_deprecatedMethods_WHEN_called_THEN_throwsUnsupportedOperationException() {
-        assertThrows(UnsupportedOperationException.class, () ->
-                IdHelper.hashSeed(1), "Deprecated hashSeed method should throw UnsupportedOperationException");
-
-        assertThrows(UnsupportedOperationException.class, () ->
-                IdHelper.extractNineDigitNumberInStringFromHash("abc"), 
-                "Deprecated extractNineDigitNumberInStringFromHash method should throw UnsupportedOperationException");
-    }
 }
