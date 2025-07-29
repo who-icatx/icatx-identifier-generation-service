@@ -68,8 +68,8 @@ public class IdGenerationServiceTest {
 
     @Test
     public void GIVEN_existingIds_WHEN_generateUniqueId_isCalled_THEN_onlyNewIdIsAdded() {
-        String valueForSeedOne = IdHelper.extractNineDigitNumberInStringFromHash(IdHelper.hashSeed(1));
-        String valueForSeedTwo = IdHelper.extractNineDigitNumberInStringFromHash(IdHelper.hashSeed(2));
+        String valueForSeedOne = IdHelper.generateNineDigitNumberFromSeed(1);
+        String valueForSeedTwo = IdHelper.generateNineDigitNumberFromSeed(2);
 
         when(identificationRepository.getExistingIds()).thenReturn(
                 Arrays.asList(prefix + valueForSeedOne, prefix + valueForSeedTwo)
@@ -114,7 +114,7 @@ public class IdGenerationServiceTest {
     @Test
     public void GIVEN_candidateAlreadyExists_WHEN_generateUniqueId_isCalled_THEN_nextCandidateIsUsed() {
         // first value for seedValue=1
-        String valueForSeedOne = IdHelper.extractNineDigitNumberInStringFromHash(IdHelper.hashSeed(1));
+        String valueForSeedOne = IdHelper.generateNineDigitNumberFromSeed(1);
 
         when(identificationRepository.getExistingIds()).thenReturn(List.of(prefix+valueForSeedOne));
         lenient().when(identificationRepository.existsById(prefix + valueForSeedOne)).thenReturn(true);

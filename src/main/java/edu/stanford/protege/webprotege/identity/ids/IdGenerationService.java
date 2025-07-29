@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static edu.stanford.protege.webprotege.identity.ids.IdHelper.*;
+import static edu.stanford.protege.webprotege.identity.ids.IdHelper.generateNineDigitNumberFromSeed;
 
 @Service
 public class IdGenerationService {
@@ -39,7 +39,7 @@ public class IdGenerationService {
 
             do {
                 seedValue++;
-                uniqueId = String.format("%s%s", prefix, extractNineDigitNumberInStringFromHash(hashSeed(seedValue)));
+                uniqueId = String.format("%s%s", prefix, generateNineDigitNumberFromSeed(seedValue));
                 LOGGER.info("Trying to generate id " + uniqueId);
             } while (identificationRepository.existsById(uniqueId));
             updateSeedValue(seedValue);
