@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>edu.stanford.protege</groupId>
 	<artifactId>icatx-id-generation-service</artifactId>
-	<version>0.0.21</version>
+	<version>0.0.22</version>
 	<name>icatx-id-generation-service</name>
 	<description>A service that handles the ID generation of OWL classes so they are unique across all projects</description>
 	<properties>
