@@ -20,17 +20,11 @@ public class IdGenerationService {
     private final IdentificationRepository identificationRepository;
 
     private static final String SEED_NAME = "id_seed";
-    private volatile long lastSeedValue = -1;
-    private final Set<String> existingIdsCache = ConcurrentHashMap.newKeySet();
-
-    private final ReadWriteLockService readWriteLock;
 
     public IdGenerationService(SeedRepository seedRepository,
-                               IdentificationRepository identificationRepository,
-                               ReadWriteLockService readWriteLock) {
+                               IdentificationRepository identificationRepository) {
         this.seedRepository = seedRepository;
         this.identificationRepository = identificationRepository;
-        this.readWriteLock = readWriteLock;
     }
 
     public synchronized String generateUniqueId(String prefix) {

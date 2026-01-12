@@ -9,7 +9,7 @@ public class IdHelperTest {
     public void GIVEN_validSeed_WHEN_generateNineDigitNumberCalled_THEN_returns9DigitString() {
         long seed = 1;
 
-        String result = IdHelper.generateNineDigitNumber(seed);
+        String result = IdHelper.generateNineDigitNumberFromSeed(seed);
 
         assertNotNull(result, "Result should not be null");
         assertEquals(9, result.length(), "Result should be 9 digits long");
@@ -22,16 +22,16 @@ public class IdHelperTest {
     public void GIVEN_sameSeed_WHEN_generateNineDigitNumberCalledMultipleTimes_THEN_returnsConsistentResult() {
         long seed = 12345;
 
-        String result1 = IdHelper.generateNineDigitNumber(seed);
-        String result2 = IdHelper.generateNineDigitNumber(seed);
+        String result1 = IdHelper.generateNineDigitNumberFromSeed(seed);
+        String result2 = IdHelper.generateNineDigitNumberFromSeed(seed);
 
         assertEquals(result1, result2, "Random generator should be deterministic for the same seed value");
     }
 
     @Test
     public void GIVEN_differentSeeds_WHEN_generateNineDigitNumberCalled_THEN_returnsDifferentResults() {
-        String result1 = IdHelper.generateNineDigitNumber(1);
-        String result2 = IdHelper.generateNineDigitNumber(2);
+        String result1 = IdHelper.generateNineDigitNumberFromSeed(1);
+        String result2 = IdHelper.generateNineDigitNumberFromSeed(2);
 
         assertNotEquals(result1, result2, "Random generator should produce different outputs for different seed values");
     }
