@@ -48,7 +48,7 @@ public class IdGenerationServiceTest {
 
         doNothing().when(identificationRepository).saveListInPages(any());
 
-        idGenerationService = new IdGenerationService(seedRepository, identificationRepository, readWriteLock);
+        idGenerationService = new IdGenerationService(seedRepository, identificationRepository);
     }
 
     @Test

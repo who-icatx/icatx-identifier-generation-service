@@ -6,29 +6,15 @@ public class IdHelper {
 
     /**
      * Generates a 9-digit random number using the provided seed.
-     * The number will be between 100000000 and 999999999 (inclusive).
+     * This method ensures the number is always exactly 9 digits without leading zeros.
      * 
      * @param seedValue the seed value for reproducible random generation
-     * @return a 9-digit number as a string, padded with leading zeros if necessary
-     */
-    public static String generateNineDigitNumber(long seedValue) {
-        Random random = new Random(seedValue);
-        // Generate a number between 100000000 and 999999999 (9 digits)
-        int nineDigitNumber = 100000000 + random.nextInt(900000000);
-        return String.format("%09d", nineDigitNumber);
-    }
-
-    /**
-     * Generates a 9-digit random number using the provided seed.
-     * This method ensures the number is always exactly 9 digits.
-     * 
-     * @param seedValue the seed value for reproducible random generation
-     * @return a 9-digit number as a string
+     * @return a 9-digit number as a string (between 100000000 and 999999999)
      */
     public static String generateNineDigitNumberFromSeed(long seedValue) {
         Random random = new Random(seedValue);
-        // Generate a number between 0 and 999999999, then ensure it's 9 digits
-        long number = Math.abs(random.nextLong()) % 1_000_000_000L;
-        return String.format("%09d", number);
+        // Generate a number between 100000000 and 999999999 (9 digits without leading zeros)
+        long number = 100_000_000L + (Math.abs(random.nextLong()) % 900_000_000L);
+        return String.valueOf(number);
     }
 }
